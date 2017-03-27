@@ -8,7 +8,7 @@ Usage:
    heatmap_generator.py [options] <netcdf_out> <fig_name>
 
 Options:
-    --color=<col_scheme>    Color scheme (see matplotlib). You can find other colors in http://matplotlib.org/examples/color/colormaps_reference.html [default: Reds].
+    --color=<col_scheme>    Color scheme for matplotlib. For more options, visit http://matplotlib.org/examples/color/colormaps_reference.html [default: Reds].
     --limit=<grad_limit>    Gradient limit of read count [default: 20].
 """
 
