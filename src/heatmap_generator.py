@@ -9,9 +9,9 @@ Usage:
 
 Options:
     --color=<col_scheme>    Color scheme for matplotlib. For more options, visit http://matplotlib.org/examples/color/colormaps_reference.html [default: Reds].
-    --red=<red>   Endpoint color of custom color gradient. Ignored if not --color=None [default: 1].
-    --green=<green> Endpoint color of custom color gradient. Ignored if not --color=None [default: 1].
-    --blue=<blue>   Endpoint color of custom color gradient. Ignored if not --color=None [default: 1].
+    --red=<red>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 1.0].
+    --green=<green>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 1.0].
+    --blue=<blue>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 1.0].
     --limit=<grad_limit>    Gradient limit of read count [default: 20].
 """
 
@@ -19,6 +19,7 @@ Options:
 from docopt import docopt
 import matplotlib
 import xarray as xa
+import ast
 
 
 def seqminer(array, names, color='Reds', lim=20):
@@ -39,7 +40,7 @@ def seqminer(array, names, color='Reds', lim=20):
         im = grid[i].imshow(array[i,:,:], interpolation="none", cmap=color, clim=(0.0, lim))
         grid[i].get_xaxis().set_visible(False)
         grid[i].get_yaxis().set_visible(False)
-        grid[i].set_title(name)
+        grid[i].set_title((name.split('/')[-1]).split('.')[0])
 
     return fig
 
@@ -53,12 +54,12 @@ if __name__ == '__main__':
     Col = arguments['--color']
     print("Using matplotlib color scheme: " + str(Col))
 
-    if ast.literal_eval(Col) == None:
-        cdict2 = { 'red':   [(0.0, 0.0, 1.0), (1.0, arguments['--red'], 1.0)],
-                'green':    [(0.0, 0.0, 1.0), (1.0, arguments['--green'], 1.0)],
-                'blue': [(0.0, 0.0, 1.0), (1.0, arguments['--blue'], 1.0)]
+    if Col == 'Custom':
+        cdict2 = { 'red':   [(0.0, 0.0, 1.0), (1.0, float(arguments['--red']), 1.0)],
+                'green':    [(0.0, 0.0, 1.0), (1.0, float(arguments['--green']), 1.0)],
+                'blue': [(0.0, 0.0, 1.0), (1.0, float(arguments['--blue']), 1.0)]
                 }
-        Col = matplotlib.colors.LinearSegmentedColormap('Col', cdict2, 256)
+        Col = matplotlib.colors.LinearSegmentedColormap('custom', cdict2, 256)
 
     Limit = int(arguments['--limit'])
     print("Color gradient limit: " + str(Limit))
