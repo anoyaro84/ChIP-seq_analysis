@@ -9,9 +9,9 @@ Usage:
 
 Options:
     --color=<col_scheme>    Color scheme for matplotlib. For more options, visit http://matplotlib.org/examples/color/colormaps_reference.html [default: Reds].
-    --red=<red>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 1.0].
-    --green=<green>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 1.0].
-    --blue=<blue>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 1.0].
+    --red=<red>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 0.5].
+    --green=<green>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 0.5].
+    --blue=<blue>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 0.5].
     --limit=<grad_limit>    Gradient limit of read count [default: 20].
 """
 
