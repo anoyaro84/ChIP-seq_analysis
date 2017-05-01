@@ -59,7 +59,7 @@ def draw_snapshot(sites, bamfiles, color="black", min_y=30, Nsite=5):
             grid[i*Nsites_use+k].get_yaxis().set_visible(False)
             grid[i*Nsites_use+k].annotate(
                     bamfiles[i].split('/')[-1].split('.')[0]
-                    +" [0-"+str(max(ymax, min_y))+"]",
+                    +" [0-"+str(ymaxs[i])+"]",
                     xy=(0,1), xytext=(10, -10),
                     va='top', xycoords='axes fraction',
                     textcoords='offset points',
