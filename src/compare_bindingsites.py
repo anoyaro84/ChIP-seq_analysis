@@ -7,10 +7,10 @@ Usage:
 
 Options:
     --color=<col_scheme>    Color scheme for matplotlib. For more options, visit http://matplotlib.org/examples/color/colormaps_reference.html [default: Reds].
-    --plottype=<plottype>  Type of visualization. Either one of heatmap, LTheatmap (lower-triangle heatmap) and clustermap (heatmap with clustering) [default: heatmap].
+    --plottype=<plottype>  Type of visualization. Either one of heatmap, LTheatmap (lower-triangle heatmap), clustermap (heatmap with clustering) and matrix (save text file with similarity measured) [default: heatmap].
     --measure=<sim_measure> Similarity measure. Can either be correlation (pearson correaltion in co-occupancy profile) or overlap (overlap rate in intervals) [default: correlation].
-    --grad_max=<grad_max>   upper bound of color gradient [default: 1.0].
-    --grad_min=<grad_min>   lower bound of color gradient [default: 0.0].
+    --grad_max=<grad_max>   Upper bound of color gradient [default: 1.0].
+    --grad_min=<grad_min>   Lower bound of color gradient [default: 0.0].
 """
 
 from docopt import docopt
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     vmin = float(arguments['--grad_min'])
     measure = arguments['--measure']
 
-    if not PlotType in ['heatmap', 'LTheatmap','clustermap']:
+    if not PlotType in ['heatmap', 'LTheatmap', 'clustermap', 'matrix']:
         raise ValueError('Unknown plot type is given: ' + PlotType)
 
     if not measure in ['correlation', 'overlap']:
@@ -95,7 +95,6 @@ if __name__ == '__main__':
     mat, name = create_array(Bedfiles, overlap=measure == 'overlap')
 
     # produce heatmap
-    print("Producing heatmap at " + Outfile)
     pdmat = pd.DataFrame(data=mat, columns=name)
     mask = np.zeros_like(pdmat, dtype=np.bool)
 
@@ -109,18 +108,24 @@ if __name__ == '__main__':
 
     #print(pdmat)
 
-    fig = plt.figure(figsize=(10,10))
     if PlotType in ['heatmap', 'LTheatmap']:
+        print("Producing heatmap at " + Outfile)
+        fig = plt.figure(figsize=(10,10))
         ax = sns.heatmap(pdmat, mask=mask, cmap=Cmap, square=True, linewidths=1,
-            vmin=vmin, vmax=vmax, xticklabels=name, yticklabels=name)
+           vmin=vmin, vmax=vmax, xticklabels=name, yticklabels=name)
         plt.xticks(rotation='vertical')
         plt.yticks(rotation='horizontal')
         fig.savefig(Outfile, dpi=100)
 
-    else:
+    elif PlotType == 'clustermap':
+        print("Producing heatmap at " + Outfile)
+        fig = plt.figure(figsize=(10,10))
         cm = sns.clustermap(pdmat, linewidths=1, cmap=Cmap,
-                vmin=vmin, vmax=vmax)
+                  vmin=vmin, vmax=vmax)
         plt.setp(cm.ax_heatmap.get_yticklabels(), rotation='horizontal')
         plt.setp(cm.ax_heatmap.get_xticklabels(), rotation='vertical')
         cm.savefig(Outfile, dpi=100)
+    else:
+        print("Saving matrix at " + Outfile)
+        np.savetxt(Outfile, mat, delimiter='\t')
 
