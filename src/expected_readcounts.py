@@ -32,7 +32,10 @@ import numpy as np
 def expected_average(array, names, color, xlim, ylim, x_range, c_interval):
     import matplotlib.pyplot as plt
     plt.rcParams['font.family'] = 'Arial'
-    plt.rcParams['font.size'] = 10
+    plt.rcParams['font.size'] = 20
+    plt.rcParams['ytick.labelsize']='large'
+    plt.rcParams['xtick.labelsize']='large'
+
 
     means = np.zeros((len(names), array.shape[2]))
     for i in range(len(names)):

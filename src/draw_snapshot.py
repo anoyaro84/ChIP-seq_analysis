@@ -11,6 +11,7 @@ Options:
     --red=<red>  red of RGB color code [default: 1].
     --green=<green>  green of RGB color code [default: 0].
     --blue=<blue>  blue of RGB color code [default: 0].
+    --maxSite=<maxsite>  number of sites to be used [default: 5].
 """
 
 from docopt import docopt
@@ -85,6 +86,7 @@ if __name__ == '__main__':
     red = float(arguments['--red'])
     green = float(arguments['--green'])
     blue = float(arguments['--blue'])
+    Nsite = int(arguments['--maxSite'])
 
     #printing information
     print("Reading coverage of coordinates specified by: " + bedfile)
@@ -94,6 +96,6 @@ if __name__ == '__main__':
 
     sites=pybedtools.BedTool(bedfile)
     fig = draw_snapshot(sites, bamfiles, color=(red, green, blue),
-            min_y=30, Nsite=5)
+            min_y=30, Nsite=Nsite)
     fig.savefig(outfile, dpi=100, bbox_inches="tight")
 
