@@ -9,6 +9,7 @@ Usage:
    coverage_sites.py [options] <bed_file> <netcdf_out> <bam_file>...
 
 Options:
+    --isbigwig=<isbigwig>   Bigwig is provided instead of bam   [default: False].
     --window=<window-size>  Size of genomic locations [default: 100].
     --threads=<thred-num>   Number of threads for calculating coverage [default: 1].
     --Ref_ver=<ref_ver>     Reference genome version [default: hg19].
@@ -31,7 +32,6 @@ def midpoint_generator(bedfile):
 
 # function for calculating coverage
 def coverage(Bedfile, Bamfiles, Nproc, bins=None, fragSize=None):
-    import os
     import metaseq
     import numpy as np
 
@@ -43,9 +43,33 @@ def coverage(Bedfile, Bamfiles, Nproc, bins=None, fragSize=None):
 
     return np.asarray(ip_array)
 
+# function for calculating 
+def coverage_bw(Bedfile, BigWigs, bins=None):
+    import subprocess as sp
+    import numpy as np
+    Bedfile.saveas('tmp_bed.bed')
+    
+    ip_array = []
+    for BigWig in BigWigs:
+        print("Calculating coverages from : " + BigWig)
+        command = ['bwtool', 'extract', 'bed', 'tmp_bed.bed', BigWig, 'tmp.bed']
+        print(' '.join(command))
+        p = sp.Popen(command, stdout=sp.PIPE, stdin=sp.PIPE)
+        p.wait()
+
+        out = pybedtools.BedTool('tmp.bed')
+        
+        if bins == None:
+            mat = np.vstack(
+                    [np.array(str(a[-1]).split(',')) for a in out]
+                    )
+            mat[mat=='NA'] = '0'
+            mat.astype(float)
+            ip_array.append(mat)
+
+    return np.asarray(ip_array)
 
 # main 
-
 if __name__ == '__main__':
     # reading arguments
     arguments = docopt(__doc__)
@@ -54,6 +78,7 @@ if __name__ == '__main__':
     WinSize = int(arguments['--window'])
     Nthread = int(arguments['--threads'])
     genome_ver = arguments['--Ref_ver']
+    IsBigWig = bool(arguments['--isbigwig'])
 
     #printing information
     print("Reading coverage of coordinates specified by: " + bedfile)
@@ -78,7 +103,10 @@ if __name__ == '__main__':
     Sites = MidSites.slop(b=WinSize, genome=genome_ver)
 
     #calculate covrage
-    array = coverage(Sites, Bamfiles=bamfiles, Nproc=Nthread, bins=BinSize, fragSize=FragSize)
+    if not IsBigWig:
+        array = coverage(Sites, Bamfiles=bamfiles, Nproc=Nthread, bins=BinSize, fragSize=FragSize)
+    else:
+        array = coverage_bw(Sites, bamfiles, BinSize)
     print("Calculating coverage was completed")
 
     #save output
