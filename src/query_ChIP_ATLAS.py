@@ -12,7 +12,7 @@ Options:
 
 import docopt
 import pandas as pd
-import urllib.request as url
+import urllib as url
 import os
 
 if __name__=='__main__':
@@ -68,11 +68,11 @@ if __name__=='__main__':
                     genome + "/eachData/bed" + thr + '/' + ID + "." + thr + '.bed'
             local = prefix + '/bed/' + ID + '.' + thr + '.bed'
             if not os.path.isfile(local):
-                try:
-                    url.urlretrieve(address, local)
-                except url.ContentTooShortError:
-                    print(ID)
-                    raise
+ #               try:
+                url.urlretrieve(address, local)
+#                except url.ContentTooShortError:
+#                    print(ID)
+#                    raise
 
     # obtaining bigwig
     if datatype in  ['both', 'bigwig']:
@@ -84,8 +84,8 @@ if __name__=='__main__':
                     genome + "/eachData/bw/" + ID + ".bw"
             local = prefix + '/bigwig/' + ID + '.bw'
             if not os.path.isfile(local):
-                try:
-                    url.urlretrieve(address, local)
-                except url.ContentTooShortError:
-                    print(ID)
+ #               try:
+                url.urlretrieve(address, local)
+ #               except url.ContentTooShortError:
+ #                   print(ID)
 
