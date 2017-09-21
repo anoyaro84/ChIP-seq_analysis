@@ -10,6 +10,10 @@ Usage:
 
 Options:
     --isbigwig=<isbigwig>   Bigwig is provided instead of bam   [default: False].
+    --isTable=<istable> Indicator parameter that list of bams are given in a table. If True, it will load the table and find IDs to locate bam or bigwig files [default: False].
+    --colname_table=<colname>   Column name to identify IDs from the table, if isTable=True [default: IDs].
+    --prefix_bam=<prefix>   Common prefix for bam_file to locate them [default: None].
+    --suffix_bam=<suffix>   Common suffix for bam_file to locate them [default: None].
     --window=<window-size>  Size of genomic locations [default: 100].
     --threads=<thred-num>   Number of threads for calculating coverage [default: 1].
     --Ref_ver=<ref_ver>     Reference genome version [default: hg19].
@@ -21,7 +25,7 @@ from docopt import docopt
 import pybedtools
 import xarray as xr
 import ast
-
+import pandas as pd
 
 # function for obtaining center of genomic locations
 def midpoint_generator(bedfile):
@@ -48,7 +52,7 @@ def coverage_bw(Bedfile, BigWigs, bins=None):
     import subprocess as sp
     import numpy as np
     Bedfile.saveas('tmp_bed.bed')
-    
+
     ip_array = []
     for BigWig in BigWigs:
         print("Calculating coverages from : " + BigWig)
@@ -58,7 +62,7 @@ def coverage_bw(Bedfile, BigWigs, bins=None):
         p.wait()
 
         out = pybedtools.BedTool('tmp.bed')
-        
+
         if bins == None:
             mat = np.vstack(
                     [np.array(str(a[-1]).split(',')) for a in out]
@@ -79,12 +83,33 @@ if __name__ == '__main__':
     Nthread = int(arguments['--threads'])
     genome_ver = arguments['--Ref_ver']
     IsBigWig = bool(arguments['--isbigwig'])
+    Istable = bool(arguments['--isTable'])
+    prefix = arguments['--prefix_bam']
+    suffix = arguments['--suffix_bam']
+
+    if str(prefix) == 'None':
+        prefix = ''
+    if str(suffix) == 'None':
+        suffix = ''
 
     #printing information
     print("Reading coverage of coordinates specified by: " + bedfile)
     print("With +/- " + str(WinSize) + "bp of window size")
     print("Reference genome :" + genome_ver)
     print("Number of threads: " + str(Nthread))
+
+    if Istable:
+        tableName = bamfiles[0]
+        colname = str(arguments['--colname_table'])
+        print("loading bam files from the table: " + tableName)
+        table = pd.read_csv(tableName, sep='\t', header=0)
+        if colname in table.columns:
+            bamfiles = [prefix+id+suffix for id in table[colname].tolist()]
+        else:
+            raise ValueError("The column name for IDs (" + colname + ") is not found in the table!")
+    else:
+        bamfiles = [prefix+id+suffix for id in bamfiles]
+
 
     FragSize = None
     if ast.literal_eval(arguments['--fragment']) != None:

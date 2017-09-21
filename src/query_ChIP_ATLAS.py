@@ -1,4 +1,4 @@
-"""Query ChIP-ATLAS data. 
+"""Query ChIP-ATLAS data.
 
 Usage:
     query_ChIP_ATLAS [options] <celltype> <prefix>
@@ -49,11 +49,10 @@ if __name__=='__main__':
 
     print(str(ind_final.sum()) + " entries remained")
     table = table[ind_final]
-    
     prefix = str(arguments['<prefix>'])
     print("Saving filtered table at " + prefix + "/table.tab")
 
-    table.to_csv(prefix + "/table.tab", sep='\t')
+    table.to_csv(prefix + "/table.tab", sep='\t', index=False)
 
 
     datatype = str(arguments['--datatype'])
