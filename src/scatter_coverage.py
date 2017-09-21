@@ -73,6 +73,7 @@ def create_array(Bedfiles, Bamfiles, measure, max_workers=15):
     # measuring total number of reads
 
     Nreads = [pysam.AlignmentFile(bam).mapped for bam in Bamfiles]
+    print(Nreads)
 
     if measure == "FPKM":
         print("Calculating FPKM")
@@ -81,10 +82,10 @@ def create_array(Bedfiles, Bamfiles, measure, max_workers=15):
                 counts[j,i] = np.log(1+float(site[-1])*(1000000000/Nreads[i])/float(site.length))
 
     elif measure == "CPM":
-        print("calculating CPM")
+        print("Calculating CPM")
         for i in range(len(Bamfiles)):
             for j, site in enumerate(bamreads[i]):
-                counts[j,i] = np.log(1+float(site[-1])*(1000000/Nreads[i]))
+                counts[j,i] = np.log(1+float(site[-1])*1000000.0/float(Nreads[i]))
 
     return counts, colname, UnionSite
 
@@ -159,7 +160,7 @@ if __name__ == '__main__':
     counts, colname, UnionSite = create_array(Bedfiles, Bamfiles, measure, max_workers=2)
 
     # identify sites to be highlighted:
-    if hlsites is "None":
+    if hlsites == "None":
         print("No features are highlighted")
         index_highlight = dict()
     else:
