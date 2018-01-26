@@ -14,7 +14,7 @@ Options:
     --colname_table=<colname>   Column name to identify IDs from the table, if isTable=True [default: IDs].
     --prefix_bam=<prefix>   Common prefix for bam_file to locate them [default: None].
     --suffix_bam=<suffix>   Common suffix for bam_file to locate them [default: None].
-    --window=<window-size>  Size of genomic locations [default: 100].
+    --window=<window-size>  Size of genomic locations [default: 1000].
     --threads=<thred-num>   Number of threads for calculating coverage [default: 1].
     --Ref_ver=<ref_ver>     Reference genome version [default: hg19].
     --fragment=<frag-size>  Size of fragment size by which each read is extended toward 3'end (used in metaseq function) [default: None].
@@ -82,8 +82,8 @@ if __name__ == '__main__':
     WinSize = int(arguments['--window'])
     Nthread = int(arguments['--threads'])
     genome_ver = arguments['--Ref_ver']
-    IsBigWig = bool(arguments['--isbigwig'])
-    Istable = bool(arguments['--isTable'])
+    IsBigWig = arguments['--isbigwig'] in ['True', 'true']
+    Istable = arguments['--isTable'] in ['True', 'true']
     prefix = arguments['--prefix_bam']
     suffix = arguments['--suffix_bam']
 

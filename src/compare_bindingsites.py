@@ -29,7 +29,7 @@ def create_array(Bedfiles, overlap=True):
     colname = [None] * len(Bedfiles)
 
     # create bedfiles
-    print("Collecting bamfiles... ")
+    print("Collecting bemfiles... ")
     for i,Bedfile in zip(range(len(Bedfiles)),Bedfiles):
         print("Obtaining " + Bedfile)
         PyBedfiles[Bedfile] = pb.BedTool(Bedfile)

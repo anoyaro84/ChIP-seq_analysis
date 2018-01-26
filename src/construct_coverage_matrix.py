@@ -1,0 +1,110 @@
+"""Generate coverage matrix given a bed files and multiple bam files.
+
+Taking reference bed and multiple bam files, and construct a coverage matrix. If multiple bed files are given (delimited with ","), union of them will be taken.
+
+Usage:
+    construct_coverage_matrix.py [options] <outfile> <bedfiles> <bamfiles>...
+
+Options:
+    --measure=<meausre>   Either FPKM or CPM used to calculate coverage. [default: FPKM].
+    --cores=<cores>  Maximum number of jobs to be excuted in parallel. [default: 10].
+"""
+
+from docopt import docopt
+import ast
+import numpy as np
+import pybedtools as pb
+import pandas as pd
+import concurrent.futures as cf
+
+
+
+def readcount(site, pathtobam, order):
+    read = pb.BedTool.coverage(site, pathtobam)
+    return order, read
+
+def flagstats(bamfile, order):
+    from subprocess import Popen, PIPE
+    p = Popen(['samtools', 'flagstat', bamfile], stdout=PIPE)
+    for line in p.stdout:
+        if "mapped" in line:
+            nmapped = line.rstrip().split()
+            nmapped = int(nmapped[0])
+            break
+    return nmapped, order
+
+
+def create_array(Bedfiles, Bamfiles, measure='FPKM', max_workers=15):
+    mat = np.zeros((len(Bedfiles), len(Bedfiles)))
+    PyBedfiles = dict()
+
+    # create bedfiles
+    print("Collecting bedfiles... ")
+    for i,Bedfile in zip(range(len(Bedfiles)),Bedfiles):
+        print("Obtaining " + Bedfile)
+        PyBedfiles[Bedfile] = pb.BedTool(Bedfile)
+
+    print("Obtaining unions of binding sites")
+    UnionSite = PyBedfiles[Bedfile]
+    for Bedfile in PyBedfiles:
+        UnionSite = UnionSite.cat(PyBedfiles[Bedfile])
+
+    # reading bam reads
+    bamreads = [None]*len(Bamfiles)
+    futures = []
+    print("Calculating read counts from bam files")
+    print(len(Bamfiles))
+    with cf.ThreadPoolExecutor(max_workers=max_workers) as e:
+        for order in range(len(Bamfiles)):
+            futures.append(e.submit(readcount, UnionSite, Bamfiles[order], order))
+
+        for future in cf.as_completed(futures):
+            order, read = future.result()
+            bamreads[order] = read
+
+    # measuring total number of reads
+    print("Calculating " + measure)
+    Nreads = [None] * len(Bamfiles)
+    futures = []
+    with cf.ThreadPoolExecutor(max_workers=max_workers) as e:
+        for order in range(len(Bamfiles)):
+            futures.append(e.submit(flagstats, Bamfiles[order], order))
+
+        for future in cf.as_completed(futures):
+            read, order = future.result()
+            Nreads[order] = float(read)
+
+
+    counts = np.zeros((len(UnionSite), len(Bamfiles)))
+    for i in range(len(Bamfiles)):
+        for j, site in enumerate(bamreads[i]):
+            if measure == 'FPKM':
+                counts[j,i] = float(site.name)*(1000000000/Nreads[i])/float(site.length)
+            elif measure == 'CPM':
+                print(float(site.name))
+                counts[j,i] = float(site.name)*(1000000000/Nreads[i])
+
+    print(UnionSite.to_dataframe())
+    print(pd.DataFrame(np.log2(counts+1)))
+    df =  pd.concat([UnionSite.to_dataframe(), pd.DataFrame(np.log2(counts+1))], axis=1)
+
+    return df
+
+
+if __name__ == '__main__':
+    # reading argument
+    arguments = docopt(__doc__)
+    Bedfiles = str(arguments['<bedfiles>']).split(',')
+    Bamfiles = arguments['<bamfiles>']
+    Outfile = arguments['<outfile>']
+
+    Measure = str(arguments['--measure'])
+    Cores = int(arguments['--cores'])
+
+    if not Measure in ['FPKM', 'CPM']:
+        raise ValueError("Unknown measure: " + Measure + " , should be either of FPKM and CPM")
+
+    df = create_array(Bedfiles, Bamfiles, measure=Measure, max_workers=Cores)
+    df.to_csv(Outfile, sep='\t', index=False)
+
+
