@@ -26,7 +26,7 @@ def co_occupancy(Refbed, Bedfiles):
        score = [int(site.name)!=0 for site in tmp]
        occupancy[:, i] = np.array(score)
 
-   df = pd.concat([Reference.to_dataframe(), pd.DataFrame(occupancy)], axis=1)
+   df = pd.concat([Reference.to_dataframe(), pd.DataFrame(occupancy, columns=Bedfiles)], axis=1)
    return df
 
 
@@ -40,4 +40,4 @@ if __name__ == '__main__':
     df = co_occupancy(Refbed, Bedfiles)
 
     print("Saving outcome at " + Outmat)
-    df.to_csv(Outmat, sep='\t', header=False, index=False)
+    df.to_csv(Outmat, sep='\t', header=True, index=False)

@@ -86,7 +86,7 @@ def create_array(Bedfiles, Bamfiles, measure='FPKM', max_workers=15):
 
     print(UnionSite.to_dataframe())
     print(pd.DataFrame(np.log2(counts+1)))
-    df =  pd.concat([UnionSite.to_dataframe(), pd.DataFrame(np.log2(counts+1))], axis=1)
+    df =  pd.concat([UnionSite.to_dataframe(), pd.DataFrame(np.log2(counts+1), columns=Bamfiles)], axis=1)
 
     return df
 
@@ -105,6 +105,6 @@ if __name__ == '__main__':
         raise ValueError("Unknown measure: " + Measure + " , should be either of FPKM and CPM")
 
     df = create_array(Bedfiles, Bamfiles, measure=Measure, max_workers=Cores)
-    df.to_csv(Outfile, sep='\t', index=False)
+    df.to_csv(Outfile, sep='\t', header=True, index=False)
 
 
