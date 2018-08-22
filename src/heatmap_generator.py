@@ -33,7 +33,11 @@ def seqminer(array, names, color='Reds', lim=20):
             nrows_ncols = (1, len(names)),
             axes_pad = 0.0,
             share_all = True,
-            label_mode = "L"
+            label_mode = "L",
+            cbar_mode = 'single',
+            cbar_location='top',
+            cbar_size = '0.05%',
+            cbar_pad = 1
             )
 
     for i, name in zip(range(len(names)), names):
@@ -41,6 +45,7 @@ def seqminer(array, names, color='Reds', lim=20):
         grid[i].get_xaxis().set_visible(False)
         grid[i].get_yaxis().set_visible(False)
         grid[i].set_title((name.split('/')[-1]).split('.')[0])
+    grid.cbar_axes[0].colorbar(im)
 
     return fig
 
