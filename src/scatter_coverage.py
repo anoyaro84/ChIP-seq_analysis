@@ -10,6 +10,7 @@ Options:
     --index_name=<index_name>    Index of feature name in the bed file for highlighting (specified by hlsites). [default: 4].
     --measure=<measure>   Coverage measures. FPKM or CPM. [default: FPKM].
     --title=<title>   Title of the plot. [default: ScatterPlot].
+    --kind=<kind>   Type of plot, all options in jointplot of seaborn supported (e.g. reg, scatter) [default: scatter].
 """
 
 from docopt import docopt
@@ -90,14 +91,14 @@ def create_array(Bedfiles, Bamfiles, measure, max_workers=15):
     return counts, colname, UnionSite
 
 
-def draw_scatter(x, y, xname, yname, sites, index_highlight, title):
+def draw_scatter(x, y, xname, yname, sites, index_highlight, title, kind="scatter"):
     # generate figure
     f = plt.figure(figsize=(11,9))
     sns.set(style="white", color_codes=True)
 
     Table = pd.concat([pd.Series(x), pd.Series(y)], axis=1)
     Table.columns = [xname, yname]
-    grid = sns.jointplot(xname, yname, data=Table, kind="scatter", color='k')
+    grid = sns.jointplot(xname, yname, data=Table, kind=kind, color='k')
    # grid.ax_joint.plot([-1,max(x)*1.1],[-1,max(y)*1.1], 'r--')
     grid.ax_marg_x.set_title(title)
 
@@ -147,6 +148,7 @@ if __name__ == '__main__':
     Bamfiles = arguments['<bamfiles>']
     Outfile = arguments['<outfile>']
     measure = str(arguments['--measure'])
+    kind = str(arguments['--kind'])
     title = str(arguments['--title'])
 
     # highlight
@@ -171,7 +173,7 @@ if __name__ == '__main__':
 
 
     print("Producing scatter plot")
-    fig = draw_scatter(counts[:,0], counts[:,1], colname[0], colname[1], UnionSite, index_highlight, title)
+    fig = draw_scatter(counts[:,0], counts[:,1], colname[0], colname[1], UnionSite, index_highlight, title, kind=kind)
     print("Saving figure at :" + Outfile)
     fig.savefig(Outfile, dpi=100, bbox_inches="tight")
 

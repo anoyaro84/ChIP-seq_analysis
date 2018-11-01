@@ -107,7 +107,6 @@ dependencies:
 - msgpack-python=0.4.8=py27_0
 - nbconvert=4.1.0=py27_0
 - nbformat=4.0.1=py27_0
-- ncurses=5.9=8
 - netcdf4=1.2.9=py27_1
 - numpy=1.11.3=py27_blas_openblas_202
 - openblas=0.2.19=2
