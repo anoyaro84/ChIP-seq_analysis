@@ -13,6 +13,7 @@ Options:
     --green=<green>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 0.5].
     --blue=<blue>   Endpoint color of custom color gradient. Ignored if not color=Custom [default: 0.5].
     --limit=<grad_limit>    Gradient limit of read count [default: 20].
+    --sort=<sort_index>    Sort regions based on the signal level of a particular sample (index). Use 0 for not sorting [default: 0].
 """
 
 
@@ -20,27 +21,44 @@ from docopt import docopt
 import matplotlib
 import xarray as xa
 import ast
+import numpy as np
 
 
-def seqminer(array, names, color='Reds', lim=20):
+def seqminer(array, names, color='Reds', lim=20, sort=0):
     import matplotlib.pyplot as plt
     from mpl_toolkits.axes_grid1 import AxesGrid
     plt.rcParams['font.family'] = 'Arial'
     plt.rcParams['font.size'] = 10
+
+
+    plt.rcParams['pdf.fonttype'] = 42
     fig = plt.figure(figsize=(100, 100))
 
     grid = AxesGrid(fig, 142,
             nrows_ncols = (1, len(names)),
             axes_pad = 0.0,
             share_all = True,
-            label_mode = "L"
+            label_mode = "L",
+            cbar_mode = 'single',
+            cbar_location='top',
+            cbar_size = '0.05%',
+            cbar_pad = 1
             )
 
+    if sort > 0:
+        order = np.argsort(np.sum(-array[sort-1,:,:], axis=1))
+
+
     for i, name in zip(range(len(names)), names):
-        im = grid[i].imshow(array[i,:,:], interpolation="none", cmap=color, clim=(0.0, lim))
+        if sort == 0:
+            im = grid[i].imshow(array[i,:,:], interpolation="none", cmap=color, clim=(0.0, lim))
+        else:
+            im = grid[i].imshow(array[i,order,:], interpolation="none", cmap=color, clim=(0.0, lim))
+
         grid[i].get_xaxis().set_visible(False)
         grid[i].get_yaxis().set_visible(False)
         grid[i].set_title((name.split('/')[-1]).split('.')[0])
+    grid.cbar_axes[0].colorbar(im)
 
     return fig
 
@@ -62,10 +80,11 @@ if __name__ == '__main__':
         Col = matplotlib.colors.LinearSegmentedColormap('custom', cdict2, 256)
 
     Limit = int(arguments['--limit'])
+    sort = int(arguments['--sort'])
     print("Color gradient limit: " + str(Limit))
 
     matplotlib.use('Agg')
-    fig = seqminer(File.Coverage, File.Coverage.coords['Sample'].to_pandas(), color=Col, lim=Limit)
+    fig = seqminer(File.Coverage, File.Coverage.coords['Sample'].to_pandas(), color=Col, lim=Limit, sort=sort)
 
     OutName = arguments['<fig_name>']
     print("Saving file: " + OutName)
