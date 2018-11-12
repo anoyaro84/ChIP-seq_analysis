@@ -55,13 +55,13 @@ def create_array(Bedfiles, Bamfiles, measure='FPKM', max_workers=15, sorted=Fals
 
 
     if sorted:
+        print("Sorted bam/bed files are given. Extracting chromosome names")
         #tmpfile = UnionSite._tmp()
         #os.system('sort {0} -k1,1 -k2,2n > {1}'.format(UnionSite.fn, tmpfile))
         with temp('w') as f:
             command = """samtools view -H """ + Bamfiles[0] + """ | grep SQ | cut -f 2,3 | awk '{sub(/^SN:/,""); sub(/LN:/,""); print;}' >  """ + f.name
             os.system(command)
             UnionSite = UnionSite.sort(faidx=f.name)
-            print(UnionSite)
         #UnionSite = pb.BedTool(tmpfile)
 
     # reading bam reads
@@ -96,7 +96,6 @@ def create_array(Bedfiles, Bamfiles, measure='FPKM', max_workers=15, sorted=Fals
             if measure == 'FPKM':
                 counts[j,i] = np.log2(float(site[-1])*(1000000000/Nreads[i])/float(site.length)+1)
             elif measure == 'CPM':
-                print(float(site.name))
                 counts[j,i] = np.log2(float(site[-1])*(1000000000/Nreads[i])+1)
             else:
                 counts[j,i] = int(site[-1])

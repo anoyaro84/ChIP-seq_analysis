@@ -5,6 +5,7 @@ channels:
 - bioconda
 - defaults
 dependencies:
+- bedtools
 - argcomplete=1.0.0=py27_1
 - cairo=1.12.18=6
 - curl=7.49.0=1
